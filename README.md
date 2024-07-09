@@ -13,7 +13,7 @@ A cli chat application based on Websocket .
 
 ## Installation
 
-Clone the repo : 
+Clone the repo : [https://github.com/alirezaImani-f4L3e/uchat.git](https://github.com/alirezaImani-f4L3e/uchat.git)
 
 Within the repo run :
 
