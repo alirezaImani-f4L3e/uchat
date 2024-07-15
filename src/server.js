@@ -6,11 +6,20 @@ const chalk = require("chalk");
 const localtunnel = require('localtunnel');
 const net = require("net");
 const CLI = require('clui');
+const fs = require("fs");
+const path = require("path");
 
 const server = net.createServer();
+let db = null;
 
 // check port availability
 let port = 43777;
+db = JSON.parse(fs.readFileSync(__dirname + "/../data/db.json" , {encoding : "utf-8"}));
+
+while(db.used_ports.includes(port)){
+  port++;
+}
+
 server.once('error', function (err) {
   if (err.code === 'EADDRINUSE') {
     console.error(chalk.red(`port : ${port} already in used . please close all processes listening on port ${port} to use uchat .`));
@@ -34,7 +43,14 @@ sleep(500)
   .then(() => sleep(500))
   .then(() => countdown.stop())
   .then(() => {
+    db = JSON.parse(fs.readFileSync(__dirname + '/../data/db.json', {
+      encoding: "utf-8"
+    }));
+
     io.listen(port);
+
+    db.used_ports.push(port);
+    fs.writeFileSync(__dirname + "/../data/db.json" , JSON.stringify(db) , {encoding : "utf8"});
 
     const users = {};
 
@@ -79,6 +95,11 @@ sleep(500)
       // ctrl-c ( end of text )
       if (key === '\u0011') {
         (async function () { await ngrok.disconnect(url); }());
+
+        db = JSON.parse(fs.readFileSync(__dirname + "/../data/db.json" , {encoding : "utf-8"}));
+        db.used_ports = db.used_ports.filter(item=>item!=port);
+        fs.writeFileSync(__dirname + "/../data/db.json" , JSON.stringify(db) , {encoding : "utf8"});
+
         process.exit();
       }
       process.stdout.write(key);
